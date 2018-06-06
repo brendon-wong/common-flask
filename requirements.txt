@@ -9,24 +9,22 @@ pytest==3.5.1
 pytest-cov==2.5.1
 flake8==3.5.0
 
-# Data
-psycopg2==2.7.4
+# Database
+Flask-SQLAlchemy==2.3.2
 Flask-Migrate==2.1.1
 
-# Flask User and relevant requirements
-flask-user==1.0.1.3
-# bcrypt==3.1.4
-# Flask-Login==0.4.1
-# Flask-Mail==0.9.1
-# Flask-SQLAlchemy==2.3.2
-# Flask-WTF==0.14.2
+# Users
+Flask-Login==0.4.1
+bcrypt==3.1.4
 
 # Admin dashboard
 # Flask-Admin==1.5.0 # Release is broken, get latest version instead until patch
 git+https://github.com/flask-admin/flask-admin
 
-# Heroku
-Flask-Script==2.0.6
+# Forms and email
+Flask-Mail==0.9.1
+Flask-WTF==0.14.2
 
-# OAuth
-flask-dance[sqla]
+# Heroku
+psycopg2==2.7.4
+Flask-Script==2.0.6

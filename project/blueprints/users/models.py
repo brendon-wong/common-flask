@@ -7,53 +7,39 @@ from project.extensions import db
 from flask_user import current_user, login_required, roles_required, UserManager, UserMixin
 
 
+from project import db, bcrypt
+from flask_login import UserMixin, current_user, login_required
+
+
 class User(db.Model, UserMixin):
-    __tablename__ = 'users'
+
+    __tablename__ = "users"
+
+    # Columns in table
     id = db.Column(db.Integer, primary_key=True)
+    # 50 characters is a sensible default for the max length of first/last names
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    # 256 characters is a sensible default for the max length of emails/usernames
+    username = db.Column(db.String(256), unique=True)
+    password = db.Column(db.Text)
+    messages = db.relationship('Message', backref='user', lazy='dynamic')
 
-    # User Authentication fields
-    username = db.Column(db.String(50), nullable=True,
-                         unique=True)  # changed nullable to True
-    password = db.Column(db.String(255), nullable=False)
+    def __init__(self, first_name=None, last_name=None, username=None, password=None):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.username = username
+        self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
-    # User fields
-    active = db.Column(db.Boolean())
-    # changed nullable to True
-    first_name = db.Column(db.String(50), nullable=True)
-    # changed nullable to True
-    last_name = db.Column(db.String(50), nullable=True)
-
-    # Relationship
-    user_emails = db.relationship('UserEmail')
-    roles = db.relationship('Role', secondary='user_roles')
-
-
-# Define UserEmail data-model
-class UserEmail(db.Model):
-    __tablename__ = 'user_emails'
-    id = db.Column(db.Integer, primary_key=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', uselist=False)
-
-    # User email information
-    email = db.Column(db.String(255), nullable=False, unique=True)
-    email_confirmed_at = db.Column(db.DateTime())
-    is_primary = db.Column(db.Boolean(), nullable=False, server_default='0')
-
-
-# Define the Role data-model
-class Role(db.Model):
-    __tablename__ = 'roles'
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), unique=True)
-
-
-# Define the UserRoles association table
-class UserRoles(db.Model):
-    __tablename__ = 'user_roles'
-    id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column(db.Integer(), db.ForeignKey(
-        'users.id', ondelete='CASCADE'))
-    role_id = db.Column(db.Integer(), db.ForeignKey(
-        'roles.id', ondelete='CASCADE'))
+    # Call the class method with User.authenticate()
+    @classmethod
+    # Method requires username and password
+    def authenticate(cls, username, password):
+        found_user = cls.query.filter_by(username=username).first()
+        if found_user:
+            authenticated_user = bcrypt.check_password_hash(
+                found_user.password, password)
+            if authenticated_user:
+                # Return the user so we can log them in by storing information in the session
+                return found_user
+        return False
