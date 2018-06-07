@@ -14,6 +14,7 @@ def anonymous_required(url='/'):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if current_user.is_authenticated:
+                flash('Already logged in.')
                 return redirect(url)
             return f(*args, **kwargs)
         return decorated_function

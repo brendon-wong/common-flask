@@ -13,14 +13,14 @@ from project.blueprints.users import users
 from project.blueprints.main import main
 
 # Import models for extension configuration
-from project.blueprints.users.models import User, UserEmail, Role, UserRoles
+from project.blueprints.users.models import User
 
 # Import extensions requiring special setup
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
 # Import extensions/code to support special setup
-from flask_login import current_user
+from flask_login import current_user, login_required
 from project.blueprints.users.decorators import roles_required
 
 
@@ -79,7 +79,7 @@ def register_extensions(app):
         def is_accessible(self):
             if not current_user.is_authenticated:
                 return False
-            return current_user.has_roles('admin')
+            return current_user.role == 'admin'
         """
         # Redirect to a page if the user doesn't have access
         def inaccessible_callback(self, name, **kwargs):
@@ -88,9 +88,6 @@ def register_extensions(app):
 
     # Flask-Admin: Add views
     admin.add_view(RestrictedModelView(User, db.session))
-    admin.add_view(RestrictedModelView(UserEmail, db.session))
-    admin.add_view(RestrictedModelView(Role, db.session))
-    admin.add_view(RestrictedModelView(UserRoles, db.session))
 
     # Flask-Admin: Protect admin page
     @app.before_first_request
@@ -100,7 +97,8 @@ def register_extensions(app):
         admin_index = app.view_functions.pop(endpoint)
 
         @app.route(url, endpoint=endpoint)
-        @roles_required('admin')  # replace roles required decorator
+        @login_required
+        @roles_required('admin')
         def secure_admin_index():
             return admin_index()
 

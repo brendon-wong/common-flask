@@ -1,45 +1,51 @@
 """User models."""
+import datetime as dt
 
-import datetime
-
-from project.extensions import db
-
-from flask_user import current_user, login_required, roles_required, UserManager, UserMixin
-
-
-from project import db, bcrypt
-from flask_login import UserMixin, current_user, login_required
+from project.extensions import db, bcrypt
+from flask_login import UserMixin
 
 
 class User(db.Model, UserMixin):
 
     __tablename__ = "users"
 
-    # Columns in table
     id = db.Column(db.Integer, primary_key=True)
-    # 50 characters is a sensible default for the max length of first/last names
-    first_name = db.Column(db.String(50))
-    last_name = db.Column(db.String(50))
-    # 256 characters is a sensible default for the max length of emails/usernames
-    username = db.Column(db.String(256), unique=True)
-    password = db.Column(db.Text)
-    messages = db.relationship('Message', backref='user', lazy='dynamic')
 
-    def __init__(self, first_name=None, last_name=None, username=None, password=None):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.username = username
-        self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+    # Authentication
 
-    # Call the class method with User.authenticate()
+    # 128 characters is a sensible default for the max length of full names
+    full_name = db.Column(db.String(128))
+    # What should we call you? (for example, when we send you email?)
+    preferred_name = db.Column(db.String(128))
+    # 254 characters is the maximum length of an email address
+    email = db.Column(db.String(254), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)
+
+    role = db.Column(db.String(128))
+
+    # Activity tracking
+    created_at = db.Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+
+    def __init__(self, **kwargs):
+        # Call Flask-SQLAlchemy's constructor
+        super(User, self).__init__(**kwargs)
+        # Custom setup
+        self.password = User.encrypt_password(kwargs['password'])
+
     @classmethod
-    # Method requires username and password
-    def authenticate(cls, username, password):
-        found_user = cls.query.filter_by(username=username).first()
+    def encrypt_password(cls, password):
+        return bcrypt.generate_password_hash(password).decode('UTF-8')
+
+    @classmethod
+    def authenticate(cls, email, password):
+        found_user = cls.query.filter_by(email=email).first()
         if found_user:
             authenticated_user = bcrypt.check_password_hash(
                 found_user.password, password)
             if authenticated_user:
-                # Return the user so we can log them in by storing information in the session
+                # Return the user in the event we want to store information in the session
                 return found_user
         return False
+
+    def __repr__(self):
+        return f"{self.name}"

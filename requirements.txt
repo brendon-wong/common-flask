@@ -12,10 +12,10 @@ flake8==3.5.0
 # Database
 Flask-SQLAlchemy==2.3.2
 Flask-Migrate==2.1.1
+Flask-Bcrypt==0.7.1
 
 # Users
 Flask-Login==0.4.1
-bcrypt==3.1.4
 
 # Admin dashboard
 # Flask-Admin==1.5.0 # Release is broken, get latest version instead until patch

@@ -1,7 +1,7 @@
 """Main user section, including dashboard."""
 
 from flask import Blueprint, render_template
-from flask_user import login_required
+from flask_login import login_required
 
 main = Blueprint('main', __name__, template_folder='templates')
 
