@@ -10,6 +10,7 @@ from project.blueprints.users.models import User
 
 users = Blueprint('users', __name__, template_folder='templates')
 
+
 # Authentication
 
 

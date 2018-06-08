@@ -24,7 +24,8 @@ class User(db.Model, UserMixin):
     role = db.Column(db.String(128))
 
     # Activity tracking
-    created_at = db.Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False,
+                           default=dt.datetime.utcnow)
 
     def __init__(self, **kwargs):
         # Call Flask-SQLAlchemy's constructor
