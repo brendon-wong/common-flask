@@ -7,15 +7,15 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from project.extensions import db
 from project.utils.email import send_email
 from project.blueprints.users.decorators import anonymous_required, roles_required
-from project.blueprints.users.forms import (UserForm, LoginForm, SettingsForm,
-                                            UpdatePasswordForm, SendResetEmailForm,
-                                            ResetPasswordForm)
+from project.blueprints.users.forms import (UserForm, LoginForm, SendConfirmEmailForm,
+                                            SettingsForm, UpdatePasswordForm,
+                                            SendResetEmailForm, ResetPasswordForm)
 from project.blueprints.users.models import User
 
 users = Blueprint('users', __name__, template_folder='templates')
 
 
-# Authentication
+# Login and registration
 
 
 @users.route('/register', methods=["GET", "POST"])
@@ -42,7 +42,8 @@ def register():
                                   token=user_confirmation_token, _external=True)
             html = render_template(
                 'users/mail/confirm_email.html', confirm_url=confirm_url, user=new_user)
-            send_email("Please confirm your email", recipients=[user_email], html=html)
+            send_email("Please confirm your email",
+                       recipients=[user_email], html=html)
         except IntegrityError as e:
             flash("Email address already in use.")
             return render_template('users/register.html', form=form)
@@ -55,8 +56,8 @@ def register():
 def confirm_email(token):
     try:
         ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-        # No max_age=86400 argument so token does not expire
-        user_email = ts.loads(token, salt="confirm-email")
+        # max_age=86400 sets token to expire in one day
+        user_email = ts.loads(token, salt="confirm-email", max_age=86400)
     except:
         # Abort if token is not valid
         abort(404)
@@ -68,6 +69,31 @@ def confirm_email(token):
     login_user(user)
     flash('Successfully confirmed email account.')
     return redirect(url_for('main.dashboard'))
+
+
+@users.route('/resend-confirmation', methods=["GET", "POST"])
+@anonymous_required('/dashboard')
+def resend_confirmation():
+    form = SendConfirmEmailForm(request.form)
+    if request.method == "POST":
+        user_email = form.data['email']
+        user = User.query.filter_by(email=user_email).first()
+        if user:
+            ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+            user_confirmation_token = ts.dumps(
+                user_email, salt="confirm-email")
+            # Have Flask generate an external link
+            confirm_url = url_for('users.confirm_email',
+                                  token=user_confirmation_token, _external=True)
+            html = render_template(
+                'users/mail/confirm_email.html', confirm_url=confirm_url, user=user)
+            send_email("Please confirm your email",
+                       recipients=[user_email], html=html)
+            flash('Successfully resent account confirmation email.')
+            return redirect(url_for('users.login'))
+        else:
+            flash('This email is not associated with an account.')
+    return render_template('users/resend_confirmation.html', form=form)
 
 
 @users.route('/login', methods=["GET", "POST"])
@@ -99,7 +125,7 @@ def logout():
     return redirect(url_for('users.login'))
 
 
-# User settings
+# Settings and password changes
 
 
 @users.route('/settings', methods=["GET", "POST"])
@@ -158,7 +184,8 @@ def reset_password():
                 'users.reset_password_token', token=user_reset_token, _external=True)
             html = render_template(
                 'users/mail/reset_password.html', confirm_url=confirm_url, user=user)
-            send_email("Password reset request", recipients=[user_email], html=html)
+            send_email("Password reset request",
+                       recipients=[user_email], html=html)
             flash('Successfully sent password reset email.')
             return redirect(url_for('users.login'))
         else:

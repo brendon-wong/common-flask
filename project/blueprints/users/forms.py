@@ -3,6 +3,9 @@ from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, Length
 
 
+# Login and registration
+
+
 class UserForm(FlaskForm):
     full_name = StringField('Full Name',
                             validators=[DataRequired(), Length(min=1, max=128)])
@@ -19,6 +22,14 @@ class LoginForm(FlaskForm):
                         validators=[DataRequired(), Email(), Length(min=3, max=265)])
     password = PasswordField('Password',
                              validators=[DataRequired(), Length(min=6, max=128)])
+
+
+class SendConfirmEmailForm(FlaskForm):
+    email = StringField('Email',
+                        validators=[DataRequired(), Email(), Length(min=3, max=265)])
+
+
+# Settings and password changes
 
 
 class SettingsForm(FlaskForm):

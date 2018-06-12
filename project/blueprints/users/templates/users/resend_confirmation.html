@@ -2,9 +2,9 @@
 
 {% block content %}
 
-<h2>Account Settings</h2>
+<h2>Resend Confirmation Email</h2>
 
-<form method="POST" action="{{url_for('users.settings')}}">
+<form method="POST" action="{{url_for('users.resend_confirmation')}}">
   {{ form.csrf_token }}
   {% for field in form if field.widget.input_type != 'hidden' %}
   <p>
@@ -19,8 +19,7 @@
     </span>
   </p>
   {% endfor %}
-  <p><a href={{ url_for('users.update_password') }}>Update password</a></p>
-  <input type="submit" value="Update Account Settings">
+  <input type="submit" value="Resend Confirmation Email">
 </form>
 
 {% endblock %}

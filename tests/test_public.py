@@ -6,6 +6,7 @@ Testing in Flask: http://flask.pocoo.org/docs/1.0/testing/
 """
 from werkzeug.wrappers import Response
 
+
 def test_home(app):
     # Response object: http://flask.pocoo.org/docs/0.12/api/#response-objects
     res = app.get("/")

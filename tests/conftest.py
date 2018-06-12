@@ -18,6 +18,7 @@ import pytest
 
 from project.app import create_app
 
+
 @pytest.fixture
 def app():
     app = create_app()

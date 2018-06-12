@@ -58,7 +58,7 @@ def register_extensions(app):
 
     # Flask-WTForms
     csrf_protect.init_app(app)
-    
+
     # Flask-Mail
     mail.init_app(app)
 
