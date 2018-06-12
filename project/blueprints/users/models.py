@@ -19,6 +19,7 @@ class User(db.Model, UserMixin):
     preferred_name = db.Column(db.String(128))
     # 254 characters is the maximum length of an email address
     email = db.Column(db.String(254), unique=True, nullable=False)
+    email_confirmed = db.Column(db.Boolean, default=False, nullable=False)
     password = db.Column(db.String(128), nullable=False)
 
     role = db.Column(db.String(128))

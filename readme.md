@@ -58,6 +58,8 @@ Source: https://stackoverflow.com/questions/21529118/running-flask-migrate-on-he
 - Add Flask-Admin with https://flask-admin.readthedocs.io/en/latest/, protect index page with https://stackoverflow.com/questions/31091637/how-to-secure-the-flask-admin-panel-with-flask-security?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 - Manage remote migrations with https://stackoverflow.com/questions/21529118/running-flask-migrate-on-heroku-produces-error?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 - Configure Postgres locally with https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb
+- Remove Flask-User and add user login/registration with Cookiecutter-Flask and Rithm's examples https://www.rithmschool.com/courses/intermediate-flask/authentication-with-flask-login
+- Add email confirmation and password resets with http://exploreflask.com/en/latest/users.html and https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support
 
 ## Inspiration
 - [cookiecutter-flask](https://github.com/sloria/cookiecutter-flask)
