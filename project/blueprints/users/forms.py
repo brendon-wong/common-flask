@@ -39,6 +39,11 @@ class UpdatePasswordForm(FlaskForm):
                                  validators=[DataRequired(), Length(min=6, max=128)])
 
 
+class SendResetEmailForm(FlaskForm):
+    email = StringField('Email',
+                        validators=[DataRequired(), Email(), Length(min=3, max=265)])
+
+
 class ResetPasswordForm(FlaskForm):
     new_password = PasswordField('New Password',
                                  validators=[DataRequired(), Length(min=6, max=128)])

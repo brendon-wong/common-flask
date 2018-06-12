@@ -8,7 +8,8 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from project.extensions import db, mail
 from project.blueprints.users.decorators import anonymous_required, roles_required
 from project.blueprints.users.forms import (UserForm, LoginForm, SettingsForm,
-                                            UpdatePasswordForm, ResetPasswordForm)
+                                            UpdatePasswordForm, SendResetEmailForm,
+                                            ResetPasswordForm)
 from project.blueprints.users.models import User
 
 users = Blueprint('users', __name__, template_folder='templates')
@@ -34,11 +35,15 @@ def register():
             # Confirm user email
             user_email = form.data['email']
             ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-            user_confirmation_token = ts.dumps(user_email, salt="confirm-email")
+            user_confirmation_token = ts.dumps(
+                user_email, salt="confirm-email")
             # Have Flask generate an external link
-            confirm_url = url_for('users.confirm_email', token=user_confirmation_token, _external=True)
-            html = render_template('users/mail/confirm_email.html', confirm_url=confirm_url, user=new_user)
-            msg = Message("Please confirm your email", html=html, recipients=[user_email])
+            confirm_url = url_for('users.confirm_email',
+                                  token=user_confirmation_token, _external=True)
+            html = render_template(
+                'users/mail/confirm_email.html', confirm_url=confirm_url, user=new_user)
+            msg = Message("Please confirm your email",
+                          html=html, recipients=[user_email])
             mail.send(msg)
         except IntegrityError as e:
             flash("Email address already in use.")
@@ -52,7 +57,7 @@ def register():
 def confirm_email(token):
     try:
         ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-        # Include max_age=86400 argument to have token expire in 1 day
+        # No max_age=86400 argument so token does not expire
         user_email = ts.loads(token, salt="confirm-email")
     except:
         # Abort if token is not valid
@@ -63,7 +68,7 @@ def confirm_email(token):
     db.session.commit()
     # Log user in after email confirmed
     login_user(user)
-    flash('Successfully logged in.')
+    flash('Successfully confirmed email account.')
     return redirect(url_for('main.dashboard'))
 
 
@@ -141,20 +146,48 @@ def update_password():
 
 
 @users.route('/reset-password', methods=["GET", "POST"])
-@anonymous_required
+@anonymous_required('/dashboard')
 def reset_password():
-
-    # Edit; this is not proper functionality
-
-    form = ResetPasswordForm(request.form)
+    form = SendResetEmailForm(request.form)
     if request.method == "POST":
-        if form.validate():
-            if User.authenticate(current_user.email, form.data['password']):
-                current_user.password = User.encrypt_password(
-                    form.data['new_password'])
-                db.session.add(current_user)
-                db.session.commit()
-                flash('Successfully updated password.')
-                return redirect(url_for('main.dashboard'))
-        flash("Current password is incorrect.")
+        user_email = form.data['email']
+        user = User.query.filter_by(email=user_email).first()
+        if user:
+            ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+            user_reset_token = ts.dumps(user_email, salt="reset-password")
+            # Have Flask generate an external link
+            confirm_url = url_for(
+                'users.reset_password_token', token=user_reset_token, _external=True)
+            html = render_template(
+                'users/mail/reset_password.html', confirm_url=confirm_url, user=user)
+            msg = Message("Password reset request",
+                          html=html, recipients=[user_email])
+            mail.send(msg)
+            flash('Successfully sent password reset email.')
+            return redirect(url_for('users.login'))
+        else:
+            flash('This email is not associated with an account.')
     return render_template('users/reset_password.html', form=form)
+
+
+@users.route('/reset-password/<token>', methods=["GET", "POST"])
+@anonymous_required('/dashboard')
+def reset_password_token(token):
+    try:
+        ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+        # max_age=3600 sets token expiration to one hour
+        user_email = ts.loads(token, salt="reset-password", max_age=3600)
+    except:
+        # Abort if token is not valid
+        abort(404)
+    form = ResetPasswordForm(request.form)
+    if form.validate():
+        user = User.query.filter_by(email=user_email).first()
+        user.password = User.encrypt_password(form.data['new_password'])
+        db.session.add(user)
+        db.session.commit()
+        # Log user in after password changed
+        login_user(user)
+        flash('Successfully reset password.')
+        return redirect(url_for('main.dashboard'))
+    return render_template('users/reset_password_token.html', form=form, token=token)

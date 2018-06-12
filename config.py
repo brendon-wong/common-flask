@@ -27,4 +27,4 @@ MAIL_USERNAME = 'username@yahoo.com'
 MAIL_PASSWORD = 'password'
 MAIL_DEFAULT_SENDER = '"Project" <username@yahoo.com>'
 # Have Flask-Mail not send emails for testing
-MAIL_SUPPRESS_SEND = True
+# MAIL_SUPPRESS_SEND = True
