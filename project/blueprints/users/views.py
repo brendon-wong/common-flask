@@ -79,18 +79,21 @@ def resend_confirmation():
         user_email = form.data['email']
         user = User.query.filter_by(email=user_email).first()
         if user:
-            ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
-            user_confirmation_token = ts.dumps(
-                user_email, salt="confirm-email")
-            # Have Flask generate an external link
-            confirm_url = url_for('users.confirm_email',
-                                  token=user_confirmation_token, _external=True)
-            html = render_template(
-                'users/mail/confirm_email.html', confirm_url=confirm_url, user=user)
-            send_email("Please confirm your email",
-                       recipients=[user_email], html=html)
-            flash('Successfully resent account confirmation email.')
-            return redirect(url_for('users.login'))
+            if not user.email_confirmed:
+                ts = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+                user_confirmation_token = ts.dumps(
+                    user_email, salt="confirm-email")
+                # Have Flask generate an external link
+                confirm_url = url_for('users.confirm_email',
+                                      token=user_confirmation_token, _external=True)
+                html = render_template(
+                    'users/mail/confirm_email.html', confirm_url=confirm_url, user=user)
+                send_email("Please confirm your email",
+                           recipients=[user_email], html=html)
+                flash('Successfully resent account confirmation email.')
+                return redirect(url_for('users.login'))
+            else:
+                flash('Email already confirmed.')
         else:
             flash('This email is not associated with an account.')
     return render_template('users/resend_confirmation.html', form=form)
