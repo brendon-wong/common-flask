@@ -2,10 +2,10 @@
 from flask import Blueprint, render_template, url_for, request, flash, redirect, abort, current_app
 from flask_login import login_required, login_user, logout_user, current_user
 from sqlalchemy.exc import IntegrityError
-from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
-from project.extensions import db, mail
+from project.extensions import db
+from project.utils.email import send_email
 from project.blueprints.users.decorators import anonymous_required, roles_required
 from project.blueprints.users.forms import (UserForm, LoginForm, SettingsForm,
                                             UpdatePasswordForm, SendResetEmailForm,
@@ -42,9 +42,7 @@ def register():
                                   token=user_confirmation_token, _external=True)
             html = render_template(
                 'users/mail/confirm_email.html', confirm_url=confirm_url, user=new_user)
-            msg = Message("Please confirm your email",
-                          html=html, recipients=[user_email])
-            mail.send(msg)
+            send_email("Please confirm your email", recipients=[user_email], html=html)
         except IntegrityError as e:
             flash("Email address already in use.")
             return render_template('users/register.html', form=form)
@@ -160,9 +158,7 @@ def reset_password():
                 'users.reset_password_token', token=user_reset_token, _external=True)
             html = render_template(
                 'users/mail/reset_password.html', confirm_url=confirm_url, user=user)
-            msg = Message("Password reset request",
-                          html=html, recipients=[user_email])
-            mail.send(msg)
+            send_email("Password reset request", recipients=[user_email], html=html)
             flash('Successfully sent password reset email.')
             return redirect(url_for('users.login'))
         else:
