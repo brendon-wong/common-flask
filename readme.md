@@ -6,6 +6,8 @@ This app can be deployed on Heroku immediately and includes the Heroku-related f
 
 Inside the config.py files and the setup.py file, the app is referred to as "Project." A case sensitive search and "replace all" operation in the project's root directory is all that is needed to customize the name of the app. It is easiest to keep the Flask app directory name as "project," which is a common naming practice, but a case sensitive search for "project" will allow the directory to be renamed and for imports in other files to function correctly.
 
+To make the app fully functional, the app's two config.py files must be adjusted. Config.py in the root directory is used for development, and the config.py file in the instance folder is used for production. The main settings that need adjustment pertain to Flask-Mail—an Gmail, Yahoo, Zoho Mail, or other email account must be linked, otherwise emails for account confirmation and password resets will not be sent.
+
 The following instructions are for MacOS. See the [Installation](http://flask.pocoo.org/docs/latest/installation/) part of the Flask documentation to run the app on other operating systems.
 
 ## To set up the application:
@@ -59,7 +61,7 @@ Source: https://stackoverflow.com/questions/21529118/running-flask-migrate-on-he
 - Manage remote migrations with https://stackoverflow.com/questions/21529118/running-flask-migrate-on-heroku-produces-error?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 - Configure Postgres locally with https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb
 - Remove Flask-User and add user login/registration with Cookiecutter-Flask and Rithm's examples https://www.rithmschool.com/courses/intermediate-flask/authentication-with-flask-login
-- Add email confirmation and password resets with http://exploreflask.com/en/latest/users.html and https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support
+- Add email confirmation and password resets with http://exploreflask.com/en/latest/users.html, https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support, and https://prettyprinted.com/blog/577542/using-flask-mail-to-send-email-confirmation-links
 
 ## Inspiration
 - [cookiecutter-flask](https://github.com/sloria/cookiecutter-flask)
