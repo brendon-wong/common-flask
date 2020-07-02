@@ -21,10 +21,14 @@ Flask-Login==0.4.1
 # Flask-Admin==1.5.0 # Release is broken, get latest version instead until patch
 git+https://github.com/flask-admin/flask-admin
 
-# Forms and email
+# Email
 Flask-Mail==0.9.1
+
+# Forms
 Flask-WTF==0.14.2
+email_validator==1.1.1
+werkzeug==0.16.0
 
 # Heroku
-psycopg2==2.7.4
+psycopg2-binary==2.8.5
 Flask-Script==2.0.6
